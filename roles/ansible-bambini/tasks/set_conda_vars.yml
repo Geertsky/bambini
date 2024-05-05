@@ -1,0 +1,45 @@
+- name: "Register conda vars"
+  tags: register_conda_vars
+  block:
+    - name: "Create before"
+      ansible.builtin.shell:
+        cmd: set -o pipefail && env|sort>/tmp/before
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: "Create after"
+      ansible.builtin.raw:
+        'set -o pipefail && source /local/conda/envs/bambini-python/bin/activate; env|sort>/tmp/after'
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: "Register raw conda vars"
+      ansible.builtin.shell:
+        cmd: set -o pipefail && comm -13 /tmp/before /tmp/after
+      register: raw_conda_vars
+      changed_when: true
+
+    - name: "Debug raw_conda_vars"
+      ansible.builtin.debug:
+        msg: |
+          {% set dictionary = {} %}
+          {% for pair in raw_conda_vars.stdout_lines %}
+            {% set parts = pair.split('=') %}
+            {% set key = parts[0] | trim %}
+            {% set value = parts[1] | trim %}
+            {% set _ = dictionary.update({key: value}) %}
+          {% endfor %}
+          {{ dictionary | trim }}
+      register: conda_env_vars
+      changed_when: true
+
+    - name: "Debug conda_env_vars"
+      ansible.builtin.debug:
+        var: conda_env_vars.msg | trim | replace('\n', '')
+
+    - name: "Set host_var conda_env_vars"
+      ansible.builtin.set_fact:
+        conda_env_vars: "{{ conda_env_vars.msg | trim | replace('\n', '') }}"
+        cacheable: true
