@@ -42,3 +42,7 @@
     - name: "Continue install"
       ansible.builtin.import_tasks: continue_install.yml
       tags: continue_install
+
+- name: "Wait for bootup to finish"
+  ansible.builtin.import_tasks: wait_for_bootup_finish.yml
+  tags: wait_for_bootup_finish
