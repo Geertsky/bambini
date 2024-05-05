@@ -47,7 +47,7 @@
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: /sysroot/etc/ssh/
-    remote_src: yes
+    remote_src: true
     mode: '0600'
   loop: "{{ finalize__hostkeys.stdout_lines }}"
 
@@ -58,12 +58,11 @@
   changed_when: finalize__hostkeypubs.rc == 0
   failed_when: finalize__hostkeypubs.rc != 0
 
-
 - name: "Install ssh host pub keys"
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: /sysroot/etc/ssh/
-    remote_src: yes
+    remote_src: true
     mode: '0644'
   loop: "{{ finalize__hostkeypubs.stdout_lines }}"
   tags: debug
