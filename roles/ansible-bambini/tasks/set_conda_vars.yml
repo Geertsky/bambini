@@ -36,9 +36,10 @@
       changed_when: true
 
     - name: "Debug conda_env_vars"
+      tags: [ 'never', 'debug' ]
       ansible.builtin.debug:
         var: conda_env_vars.msg | trim | replace('\n', '')
-
+ 
     - name: "Set host_var conda_env_vars"
       ansible.builtin.set_fact:
         conda_env_vars: "{{ conda_env_vars.msg | trim | replace('\n', '') }}"
