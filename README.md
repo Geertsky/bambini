@@ -12,5 +12,3 @@ Description: Partition and install a server from the initramfs build with [dracu
 
 
 For a quick-start please see the [tuxifier-playbook repository](https://github.com/Geertsky/tuxifier-playbook).
-
-
