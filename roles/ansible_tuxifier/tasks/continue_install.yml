@@ -18,7 +18,7 @@
         mode: '0644'
 
     - name: End play
-      ansible.builtin.meta: end_play
+      ansible.builtin.meta: end_host
 
 - name: Continue install
   when: continue_install is defined and continue_install and current_version_installed
