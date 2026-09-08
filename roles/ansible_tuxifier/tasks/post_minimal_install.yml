@@ -147,12 +147,7 @@
   loop: "{{ ssh_pubs }}"
   tags: debug
 
-- name: "Issue pre-pivot commands"
-  when: distribution.pre_pivot_cmds is defined
-  ansible.builtin.command: "chroot /tuxifier-sysroot /usr/bin/sh -c '{{ item }}'"
-  loop: "{{ distribution.pre_pivot_cmds | default([]) }}"
-
-- name: "Relabel /tuxifier-sysroot"
+- name: "Relabel /bambini-sysroot"
   ansible.builtin.command:
     cmd: chroot /tuxifier-sysroot /usr/sbin/fixfiles -F onboot
   when: '(strict_selinux | default(false) | bool) and not (continue_install | default(false) | bool)'
