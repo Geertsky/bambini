@@ -95,10 +95,20 @@
         _efibootmgr: "{{ efibootmgr | default('/usr/sbin/efibootmgr') }}"
 
     - name: Read existing EFI boot entries
-      ansible.builtin.command: "chroot /tuxifier-sysroot {{ _efibootmgr }} -v"
+      ansible.builtin.command: "chroot /tuxifier-sysroot {{ _efibootmgr }}"
       register: efibootmgr_entries
       changed_when: false
 
+    - name: Remove existing efi entries
+      ansible.builtin.command:
+        argv:
+          - chroot
+          - /tuxifier-sysroot
+          - "{{ _efibootmgr }}"
+          - --delete-bootnum
+          - -b
+          - "{{ item }}"
+      loop: "{{ efibootmgr_entries.stdout_lines | select('match', '.*' ~ (installdistribution.name | capitalize) ) | map('replace', 'Boot', '') | map('replace', '* ' ~ (installdistribution.name | capitalize),'')}}"
     - name: Install grub2 at efi
       ansible.builtin.command: >
         chroot /tuxifier-sysroot {{ _efibootmgr }} --remove-dups --create --disk {{ boot_disk }}
