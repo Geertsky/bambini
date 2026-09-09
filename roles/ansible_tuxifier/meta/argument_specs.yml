@@ -1,0 +1,208 @@
+---
+argument_specs:
+  main:
+    short_description: Partition disks and install a server from a dracut initramfs
+    description:
+      - "Partitions the selected installation disks."
+      - "Creates filesystems and LVM logical volumes."
+      - "Installs a minimal operating system from an initramfs built with dracut-tuxifier."
+    author:
+      - "Geert Geurts"
+    options:
+      installdisk:
+        type: dict
+        required: true
+        description:
+          - "Describes the storage layout of the installation target."
+          - "WARNING: All specified disks are destroyed without confirmation."
+        options:
+          disks:
+            type: list
+            elements: dict
+            required: true
+            description:
+              - "Disks used as installation targets."
+            options:
+              device:
+                type: str
+                required: true
+                description:
+                  - "Full path to the block device."
+              label:
+                type: str
+                required: true
+                description:
+                  - "Partition-table type supported by O(community.general.parted#module:label)."
+              partitions:
+                type: list
+                elements: dict
+                required: true
+                description:
+                  - "Partitions to create on the disk."
+                options:
+                  id:
+                    type: str
+                    required: true
+                    description:
+                      - "Unique partition identifier across all disks."
+                      - "Used to resolve LVM physical volumes, as the default GPT partition name, and to identify special partitions such as efi."
+                  number:
+                    type: int
+                    required: true
+                    description:
+                      - "Partition number passed to O(community.general.parted#module:number)."
+                  part_start:
+                    type: str
+                    required: true
+                    description:
+                      - "Start of the partition, passed to O(community.general.parted#module:part_start)."
+                  part_end:
+                    type: str
+                    required: true
+                    description:
+                      - "End of the partition, passed to O(community.general.parted#module:part_end)."
+                  flags:
+                    type: list
+                    elements: str
+                    description:
+                      - "Partition flags passed to O(community.general.parted#module:flags), for example lvm or bios_grub."
+                  fstype:
+                    type: str
+                    description:
+                      - "Filesystem type passed to O(community.general.filesystem#module:fstype)."
+                  mkfs_opts:
+                    type: str
+                    description:
+                      - "Filesystem creation options passed as opts to O(community.general.filesystem#module:mkfs_opts)."
+                  mountpoint:
+                    type: str
+                    description:
+                      - "Mount path passed to ansible.posix.mount."
+                  mount_opts:
+                    type: str
+                    description:
+                      - "Mount options passed as opts to ansible.posix.mount."
+                  mount_order:
+                    type: int
+                    description:
+                      - "Mount order; filesystems are mounted from the lowest value to the highest."
+          lvm_layout:
+            type: list
+            elements: dict
+            description:
+              - "LVM volume groups and logical volumes to create."
+            options:
+              vg:
+                type: str
+                required: true
+                description:
+                  - "Volume-group name passed to O(community.general.lvg#module:mountpoint)."
+              pvs:
+                type: list
+                elements: str
+                required: true
+                description:
+                  - "Partition identifiers used as physical volumes."
+              lvs:
+                type: list
+                elements: dict
+                required: true
+                description:
+                  - "Logical volumes to create in the volume group."
+                options:
+                  lv:
+                    type: str
+                    required: true
+                    description:
+                      - "Logical-volume name passed to O(community.general.lvol#module:lv)."
+                  size:
+                    type: str
+                    required: true
+                    description:
+                      - "Logical-volume size passed to O(community.general.lvol#module:size)."
+                  fstype:
+                    type: str
+                    description:
+                      - "Filesystem type passed to O(community.general.filesystem#module:fstype)."
+                  mkfs_opts:
+                    type: str
+                    description:
+                      - "Filesystem creation options passed as opts to O(community.general.filesystem#module:mkfs_opts)."
+                  mountpoint:
+                    type: str
+                    description:
+                      - "Mount path passed to O(ansible.posix.mount#module:mountpoint)."
+                  mount_opts:
+                    type: str
+                    description:
+                      - "Mount options passed as opts to O(ansible.posix.mount#module:mount_opts)."
+                  mount_order:
+                    type: int
+                    description:
+                      - "Mount order; filesystems are mounted from the lowest value to the highest."
+
+      installdistribution:
+        type: dict
+        required: true
+        description:
+          - "Describes the Linux distribution to install."
+        options:
+          name:
+            type: str
+            required: true
+            description:
+              - "Distribution name."
+              - "Together with version, selects the corresponding file in the role vars directory for distribution specific variables."
+          version:
+            type: str
+            required: true
+            description:
+              - "Distribution version."
+              - "Together with name, selects the corresponding file in the role vars directory for distribution specific variables."
+          repo:
+            type: dict
+            description:
+              - "Optional override for the repository defined by the selected distribution vars file."
+            options:
+              type:
+                type: str
+                required: true
+                choices:
+                  - metalink
+                  - mirrorlist
+                  - baseurl
+                description:
+                  - "Type of repository URL."
+              url:
+                type: str
+                required: true
+                description:
+                  - "URL of the metalink, mirrorlist or baseurl."
+
+      rootpw:
+        type: str
+        required: true
+        no_log: true
+        description:
+          - "Root password for the installed operating system."
+          - "Store this value in Ansible Vault."
+
+      root_authorized_keys:
+        type: list
+        elements: str
+        description:
+          - "SSH public keys added to the root user's authorized_keys file."
+          - "These keys are added to the keys installed in the initramfs by dracut-sshd."
+
+      strict_selinux:
+        type: bool
+        description:
+          - "Whether SELinux is enabled for the installed system."
+          - "Some distributions may require the first boot to use permissive mode."
+
+      continue_install:
+        type: bool
+        description:
+          - "Whether dracut continues its normal boot flow after the minimal installation."
+          - "When false, the machine is powered off so the administrator can detach the initramfs."
+          - "When true, the installed system must provide the same kernel version as the running initramfs."
