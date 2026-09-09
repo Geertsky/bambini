@@ -6,27 +6,22 @@
     dest: /etc/pki/tls/certs/
     mode: '0644'
 
-- name: "Install genfstab"
-  ansible.builtin.copy:
-    src: files/genfstab
-    dest: /tmp/genfstab
-    mode: '0755'
-
-- name: "Generate /etc/fstab"
-  ansible.builtin.command:
-    cmd: /tmp/genfstab -f /tuxifier-sysroot -L /tuxifier-sysroot
-  register: prepare_chroot__fstab
-  failed_when: prepare_chroot__fstab.rc != 0
-
 - name: "Create /etc"
   ansible.builtin.file:
     path: /tuxifier-sysroot/etc
     state: directory
     mode: '0755'
 
+- name: Correct fstab entries
+  ansible.builtin.replace:
+    path: /tmp/fstab
+    regexp: "/tuxifier-sysroot"
+    replace: ""
+
 - name: "Write /etc/fstab"
   ansible.builtin.copy:
-    content: "{{ prepare_chroot__fstab.stdout_lines | join('\n') }}\n"
+    remote_src: true
+    src: /tmp/fstab
     dest: /tuxifier-sysroot/etc/fstab
     mode: '0644'
 

@@ -16,4 +16,5 @@
     src: "{{ mount_item.src }}"
     opts: "{{ mount_item.mount_opts | default(omit) }}"
     fstype: "{{ mount_item.fstype }}"
-    state: ephemeral
+    fstab: /tmp/fstab
+    state: mounted
