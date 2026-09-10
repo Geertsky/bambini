@@ -1,2 +1,4 @@
 ---
 # defaults file for tuxifier role
+continue_install: false
+root_authorized_keys: []
